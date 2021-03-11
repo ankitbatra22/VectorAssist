@@ -1,5 +1,5 @@
 # VectorAssist
-Utilized computer vision to take an input picture of two handwritten vectors, and classify the numbers to calculate the dot and cross product of them. I trained the model using the MNIST dataset, and openCV to create contours, the bounding boxes and apply a Gaussian filter.
+Utilized computer vision to take an input picture of two handwritten vectors, and classify the numbers to perform vector arithmetic. I trained the model using the MNIST dataset, and openCV to create contours, the bounding boxes and apply a Gaussian filter.
 
 [![IMG-3742.jpg](https://i.postimg.cc/ZYdbMT7f/IMG-3742.jpg)](https://postimg.cc/BtJf8GGD)
 
