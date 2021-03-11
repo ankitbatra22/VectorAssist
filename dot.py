@@ -11,7 +11,6 @@ v1 = list(map(int, v1))
 
 v2 = two.split(",")
 v2 = list(map(int, v2))
-print(type(v2))
 print(v2)
 
 for i in range(len(v1)):

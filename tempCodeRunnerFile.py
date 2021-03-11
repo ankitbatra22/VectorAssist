@@ -1,0 +1,1 @@
+F.log_softmax(x, dim=1)
