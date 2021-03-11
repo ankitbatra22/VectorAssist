@@ -8,50 +8,38 @@ import numpy as np
 
 #The Model it is trained from refer to (model.py)
 class Net(nn.Module):
-    def __init__(self):
-        super(Net, self).__init__()
-        # number of hidden nodes in each layer (512)
-        hidden_1 = 512
-        hidden_2 = 512
-        # linear layer (784 -> hidden_1)
-        self.fc1 = nn.Linear(28 * 28, hidden_1)
-        # linear layer (n_hidden -> hidden_2)
-        self.fc2 = nn.Linear(hidden_1, hidden_2)
-        # linear layer (n_hidden -> 10)
-        self.fc3 = nn.Linear(hidden_2, 10)
-        # dropout layer (p=0.2)
-        # dropout prevents overfitting of data
-        self.dropout = nn.Dropout(0.2)
+  def __init__(self):
+    super().__init__()
+    self.fc1 = nn.Linear(784, 512) ##fc1 means first fully connected layer
+    self.fc2 = nn.Linear(512, 512)
+    #self.fc3 = nn.Linear(64, 64)
+    self.fc4 = nn.Linear(512, 10)
 
-    def forward(self, x):
-        # flatten image input
-        x = x.view(-1, 28 * 28)
-        # add hidden layer, with relu activation function
-        x = F.relu(self.fc1(x))
-        # add dropout layer
-        x = self.dropout(x)
-        # add hidden layer, with relu activation function
-        x = F.relu(self.fc2(x))
-        # add dropout layer
-        x = self.dropout(x)
-        # add output layer
-        x = self.fc3(x)
-        return x
+  #how the data will flow through the network
+  def forward(self, x):
+    x = x.view(-1, 28*28)
+    x = F.relu(self.fc1(x))
+    x = F.relu(self.fc2(x))
+    #x = F.relu(self.fc3(x))
+    x = (self.fc4(x))
+    return F.log_softmax(x, dim=1)
 
-PATH = "entire_model.pt"
+
+# Load the trained model
+PATH = "TrainedModel.pt"
 model = torch.load(PATH)
 model.eval()
 
 # Read the input image
-im = cv2.imread("IMG_3739-1.jpg")
+im = cv2.imread("Images/IMG_3739-1.jpg")
+cv2.imshow("img", im)
 
-# Convert to grayscale and apply Gaussian filtering
+# Convert to grayscale and apply Gaussian Blur
 im_gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
 im_gray = cv2.GaussianBlur(im_gray, (5, 5), 0)
 
 # Threshold the image
 ret, im_th = cv2.threshold(im_gray, 90, 255, cv2.THRESH_BINARY_INV)
-#print(im_th.shape)
 
 # Find contours in the image
 ctrs, hier = cv2.findContours(im_th.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -65,22 +53,22 @@ nums = []
 for rect in rects:
     # To draw the rectangles
     cv2.rectangle(im, (rect[0], rect[1]), (rect[0] + rect[2], rect[1] + rect[3]), (0, 255, 0), 3)
-
     # Make each rectangular region around the digit
     region = int(rect[3] * 1.6)
     pt1 = int(rect[1] + rect[3] // 2 - region // 2)
     pt2 = int(rect[0] + rect[2] // 2 - region // 2)
     roi = im_th[pt1:pt1+region, pt2:pt2+region]
 
-    # Resizing the image
+    # Resizing the image to feed into the neural network
     roi = cv2.resize(roi, (28, 28), interpolation=cv2.INTER_AREA)
     roi = cv2.dilate(roi, (3, 3))
+
+    #prediction for each rectangle (on iteration)
     prediction = (torch.argmax(model(torch.from_numpy(roi).float()))).item()
     cv2.putText(im, str(prediction), (rect[0], rect[1]), cv2.FONT_HERSHEY_DUPLEX, 2, (0, 255, 255), 3)
-#   print(prediction)
     nums.append(prediction)
 
-#Create empty arrays for the vectors
+#Create empty arrays for each of the vectors
 v1 = []
 v2 = []
 
@@ -120,7 +108,7 @@ cross = 0
 cross = [vec1[1]*vec2[2] - vec1[2]*vec2[1], vec1[2]*vec2[0] - vec1[0]*vec2[2], vec1[0]*vec2[1] - vec1[1]*vec2[0]]
 
 # Display image with output text
-print("The cross product of the vectos is: ", cross)
+print("The cross product of the vectors is: ", cross)
 print("The dot product is: ", dot)
 
 cv2.imshow("Resulting Image with Rectangular ROIs", im)
